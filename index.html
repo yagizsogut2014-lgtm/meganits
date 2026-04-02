@@ -57,6 +57,7 @@
         .nav-btn {
             padding: 10px 22px; border-radius: 14px; font-weight: 700; font-size: 13px;
             transition: 0.3s; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;
+            cursor: pointer;
         }
         .nav-btn:hover { color: var(--accent); background: rgba(0, 210, 255, 0.06); }
         .nav-btn.active { 
@@ -64,6 +65,15 @@
             border: 1px solid rgba(0, 210, 255, 0.2);
             box-shadow: 0 0 15px rgba(0, 210, 255, 0.05);
         }
+
+        /* DUYURU MODAL */
+        #announcementModal {
+            display: none;
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 100001;
+            align-items: center; justify-content: center; backdrop-filter: blur(8px);
+        }
+        #announcementModal.active { display: flex; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         /* PAGE SYSTEM */
         .page-content { display: none; }
@@ -93,9 +103,16 @@
     <p class="mt-5 text-[10px] font-black tracking-[0.5em] text-blue-400 uppercase">Meganits Network</p>
 </div>
 
+<div id="announcementModal" onclick="closeAnnouncement()">
+    <div class="relative max-w-2xl w-full p-4" onclick="event.stopPropagation()">
+        <button onclick="closeAnnouncement()" class="absolute -top-10 right-4 text-white text-3xl hover:text-blue-400 transition">&times;</button>
+        <img src="dur.png" alt="Duyuru" class="w-full rounded-3xl shadow-2xl border border-white/10">
+    </div>
+</div>
+
 <div class="marquee-wrapper">
     <div class="marquee-content">
-        💎 MEGANITS NETWORK • TÜM SÜRÜMLER AKTİF (1.16.5 - 1.21.X) • ⚔️ SURVIVAL SEZONU BAŞLADI • 🏆 ÖDÜLLÜ ETKİNLİKLER HER AKŞAM 20:00'DE • PLAY.MEGANITS.ME • 
+        💎 MEGANITS NETWORK • TÜM SÜRÜMLER AKTİF (1.16.5 - 1.21.X) • ⚔️ SURVIVAL SEZONU BAŞLADI • 🏆 ÖDÜLLÜ ETKİNLİKLER HER AKŞAM 20:00'DE • GRAPHICS-SWIPE.GL.JOINMC.LINK • 
     </div>
 </div>
 
@@ -115,7 +132,7 @@
     <div class="flex items-center gap-4">
         <div onclick="copyIP()" class="ip-display px-6 py-3 rounded-2xl cursor-pointer hover:border-blue-500 transition-all group relative overflow-hidden">
             <span class="block text-[8px] text-slate-500 font-black mb-1 uppercase tracking-widest">Tıkla ve Kopyala</span>
-            <span class="text-blue-400 font-bold group-hover:text-white transition relative z-10">Meganits.aternos.me:33427</span>
+            <span class="text-blue-400 font-bold group-hover:text-white transition relative z-10">graphics-swipe.gl.joinmc.link</span>
         </div>
         
         <a href="https://discord.gg/5qFTdZCV54" target="_blank" class="glass w-14 h-14 flex items-center justify-center rounded-2xl hover:text-blue-400 transition-all group">
@@ -128,6 +145,8 @@
     <div class="glass max-w-fit mx-auto rounded-2xl p-2 flex flex-wrap justify-center gap-1">
         <a href="#home" class="nav-btn" id="nav-home"><i class="fa-solid fa-bolt mr-1"></i> Anasayfa</a>
         <a href="#shop" class="nav-btn" id="nav-shop"><i class="fa-solid fa-store mr-1"></i> Market</a>
+        <div onclick="openAnnouncement()" class="nav-btn text-amber-400" id="nav-announcement"><i class="fa-solid fa-bullhorn mr-1"></i> Duyuru</div>
+        
         <a href="#rules" class="nav-btn" id="nav-rules"><i class="fa-solid fa-gavel mr-1"></i> Kurallar</a>
         <a href="#team" class="nav-btn" id="nav-team"><i class="fa-solid fa-shield-cat mr-1"></i> Ekip</a>
     </div>
@@ -276,6 +295,8 @@
 <script>
     AOS.init({ duration: 1000, once: true });
 
+    const serverIP = "graphics-swipe.gl.joinmc.link";
+
     function removeLoader() {
         const loader = document.getElementById('preloader');
         setTimeout(() => {
@@ -284,9 +305,24 @@
         }, 800);
     }
 
+    // DUYURU FONKSİYONLARI
+    function openAnnouncement() {
+        document.getElementById('announcementModal').classList.add('active');
+        document.body.style.overflow = 'hidden'; // Arka plan kaymasını engelle
+    }
+
+    function closeAnnouncement() {
+        document.getElementById('announcementModal').classList.remove('active');
+        document.body.style.overflow = 'auto';
+    }
+
     // ROUTER
     function router() {
         const hash = window.location.hash.replace('#', '') || 'home';
+        
+        // Eğer duyuru modalı açıksa ve başka yere tıklandıysa kapat
+        closeAnnouncement();
+
         document.querySelectorAll('.page-content').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
 
@@ -303,12 +339,11 @@
 
     // REALTIME DATA
     async function fetchStats() {
-        const IP = "Meganits.aternos.me:33427";
         const DISCORD_ID = "1453053783847206925";
 
         try {
-            // Minecraft Status
-            const mc = await fetch(`https://api.mcstatus.io/v2/status/java/${IP}`);
+            // Minecraft Status (Yeni IP ile)
+            const mc = await fetch(`https://api.mcstatus.io/v2/status/java/${serverIP}`);
             const mcData = await mc.json();
             document.getElementById('mc-count-text').innerText = mcData.online ? 
                 `${mcData.players.online} / ${mcData.players.max}` : "SUNUCU KAPALI";
@@ -333,7 +368,7 @@
     }
 
     function copyIP() {
-        navigator.clipboard.writeText("Meganits.aternos.me:33427");
+        navigator.clipboard.writeText(serverIP);
         toast("IP KOPYALANDI! 🚀");
     }
 </script>
